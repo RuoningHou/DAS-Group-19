@@ -1,26 +1,34 @@
 #1.load packages
+```{r}
 install.packages("tidvverse")
 install.packages("moderndive")
 install.packages("gapminder")
 install.packages("sjPlot")
 install.packages("stats")
 install.packages("jtools")
-install.packages("ggplot")
+install.packages("car")
 install.packages("nnet")
-
+install.packages("ggplot")
+```
+```{r}
 library(tidyverse)
 library(moderndive)
 library(gapminder)
 library(sjPlot)
 library(stats)
 library(jtools)
-library(ggplot2)
+library(car)
 library(nnet)
-
+library(ggplot2)
+```
 #2.load data
-data = read.csv("https://github.com/RuoningHou/DAS-Group-19/blob/main/dataset19_cleaned.csv")
+
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/RuoningHou/DAS-Group-19/refs/heads/main/dataset19_cleaned.csv")
+```
 
 #analysis data
+```{r}
 evals.data = data %>%
         select(animal_type,intake_type,outcome_type,chip_status,time_at_shelter)
 print(evals.data)
@@ -28,35 +36,103 @@ ggplot(data = evals.data, aes(x = animal_type, y = time_at_shelter, fill = anima
   geom_boxplot() +
   labs(x = "Animal type", y = "Time at shelter")+
   theme(legend.position = "none")
+```
 
 #3. GLM analysis
 #3.1 GLM analysis of type
 #3.1.1 Animal type
+```{r}
 model_glm.animal_type <- glm(time_at_shelter ~ animal_type, data = data, family = poisson())
 summary(model_glm.animal_type)
 plot(model_glm.animal_type)
+```
 
 #3.1.2  Intake type
+```{r}
 model_glm.intake_type <- glm(time_at_shelter ~ intake_type, data = data, family = poisson())
 summary(model_glm.intake_type)
 plot(model_glm.intake_type)
+```
 
 #3.1.3 Outcome type
+```{r}
 model_glm.outcome_type <- glm(time_at_shelter ~ outcome_type, data = data, family = poisson())
 summary(model_glm.outcome_type)
 plot(model_glm.outcome_type)
-
+```
 #3.1.4 Chip status
+```{r}
 model_glm.chip_status <- glm(time_at_shelter ~ chip_status, data = data, family = poisson())
 summary(model_glm.chip_status)
 plot(model_glm.chip_status)
-
+```
 #3.2 Full Glm analysis
-model_full <- glm(time_at_shelter ~ animal_type + intake_type + outcome_type + chip_status,
+To analyze the impact of different factors on the length of time animals stay in shelters, this paper constructed a generalized linear model (GLM) with time at shelter as the dependent variable and animal type, intake type, outcome type, and chip status as independent variables.
+$$
+\log \left( E[\text{time_at_shelter}] \right) = \beta_0 + \beta_1 \cdot \text{animal_type} + \beta_2 \cdot \text{intake_type} + \beta_3 \cdot \text{outcome_type} + \beta_4 \cdot \text{chip_status}
+$$
+```{r}
+model.full <- glm(time_at_shelter ~ animal_type + intake_type + outcome_type + chip_status,
                   data = data,
                   family = poisson())
-summary(model_full)
-plot(model_full)
+summary(model.full)
+plot(model.full)
+```
+$$
+\begin{aligned}
+\log \left( E[\text{time_at_shelter}] \right) =& \\
+3.20530 &+ 0.16064 \cdot I(\text{animal_type} = \text{DOG}) \\
+&- 0.34465 \cdot I(\text{animal_type} = \text{OTHER}) \\
+&- 1.47614 \cdot I(\text{intake_type} = \text{OWNER SURRENDER}) \\
+&- 1.09412 \cdot I(\text{intake_type} = \text{STRAY}) \\
+&- 0.65638 \cdot I(\text{outcome_type} = \text{EUTHANIZED}) \\
+&- 0.54665 \cdot I(\text{outcome_type} = \text{OTHER}) \\
+&- 1.47724 \cdot I(\text{outcome_type} = \text{RETURNED TO OWNER}) \\
+&+ 0.18684 \cdot I(\text{chip_status} = \text{SCAN CHIP}) \\
+&- 0.01124 \cdot I(\text{chip_status} = \text{SCAN NO CHIP}) \\
+\end{aligned}
+$$
 
+#Final Resolution
+```{r}
+deviance <- deviance(model.full)
+df_residual <- df.residual(model.full)
+dispersion <- deviance / df_residual
+dispersion
+```
+dispersion > 1, indicating overdispersion
+
+#Dealing with overdispersion
+```{r}
+model.quasi <- glm(time_at_shelter ~ animal_type + intake_type + outcome_type + chip_status,
+                   data = data, 
+                   family = quasipoisson())
+
+summary(model.quasi)
+```
+
+#predicted
+```{r}
+data$predicted.time <- predict(model.glm, type = "response")
+
+head(data[, c("time_at_shelter", "predicted_time")])
+```
+```{r}
+plot(data$time_at_shelter, data$predicted.time,
+     xlab = "Observed", ylab = "Predicted",
+     main = "Observed vs Predicted Time")
+abline(0, 1, col = "red", lwd = 2)
+```
+
+#VIF
+```{r}
+vif(model.glm)
+```
 #3.3 AIC analysis
-AIC(model_glm.animal_type, model_glm.intake_type, model_glm.outcome_type, model_glm.chip_status, model_full)
+```{r}
+AIC(model_glm.animal_type, model_glm.intake_type, model_glm.outcome_type, model_glm.chip_status, model.full)
+```
+#3.4 BIC analysis
+```{r}
+BIC(model_glm.animal_type, model_glm.intake_type, model_glm.outcome_type, model_glm.chip_status, model.full)
+```
