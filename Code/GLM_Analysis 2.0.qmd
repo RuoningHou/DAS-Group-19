@@ -126,6 +126,3 @@ BIC(model.full)
    - **Adding interaction terms** (e.g., `animal_type * intake_type`).  
    - **Testing Negative Binomial regression** to handle overdispersion.  
    - **Analyzing residuals** for potential systematic errors.
-
-# Next Steps
-If further optimization is needed, consider **interaction terms, negative binomial regression, or additional variables**.
