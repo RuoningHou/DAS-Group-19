@@ -1,0 +1,248 @@
+---
+title: "Merging data"
+author: "Group 19"
+format: 
+  html:
+    embed-resources: true
+  pdf: default
+editor: visual
+message: false
+warning: false  
+---
+
+## Running Code
+
+The file path is as follows
+
+```{r}
+getwd()
+```
+
+```{r}
+ file_paths <- c("C://Users//董泽南//Desktop//data//data//unemployment-rate.csv", "C://Users//董泽南//Desktop//data//data//terrorist-attacks.csv", "C://Users//董泽南//Desktop//data//data//military-spending-sipri.csv", "C://Users//董泽南//Desktop//data//data//tax-revenues-as-a-share-of-gdp-unu-wider.csv","C://Users//董泽南//Desktop//data//data//nuclear-warhead-stockpiles-lines.csv", "C://Users//董泽南//Desktop//data//data//Gini-coefficient.csv", "C://Users//董泽南//Desktop//data//data//share.csv", "C://Users//董泽南//Desktop//data//data//real-gdp-growth.csv", "C://Users//董泽南//Desktop//data//data//historical-gov-spending-gdp.csv")
+```
+
+Load the dataset and merge the datasets starting from the first dataset
+
+```{r}
+data_list <- lapply(file_paths, read.csv)
+```
+
+```{r}
+merged_data <- data_list[[1]]
+```
+
+Merge the datasets, starting with the first dataset
+
+```{r}
+for (i in 2:length(data_list)) { merged_data <- merge(merged_data, data_list[[i]], by = c("Entity", "Code", "Year"), all = TRUE) }
+```
+
+View the merged dataset
+
+```{r}
+head(merged_data)
+```
+
+Set the export file path and export the data as a CSV file
+
+```{r}
+
+output_path <- "C://Users//董泽南//Desktop//combined_data.csv"
+write.csv(merged_data, file = output_path, row.names = FALSE)
+cat("Data has been successfully exported to", output_path)
+
+```
+
+```{r}
+library(tidyverse)
+glimpse(merged_data)  # View data structure
+summary(merged_data)  # 
+head(merged_data)  # 
+```
+
+```{r}
+# install.packages("dplyr")
+library(dplyr)
+library(tidyverse)
+# change column name
+new_columns <- c(
+  "Country", "Country_Code", "Year", "Unemployment_Rate", "Terrorist_Attacks",
+  "Military_Expenditure", "Tax_Revenue_Share_GDP", "Nuclear_Warheads",
+  "Gini_Coefficient_Before_Tax", "Share_Below_2.15_Day", "GDP_Growth",
+  "Government_Expenditure_GDP"
+)
+# If the number of new column names is less than the number of original column names, the default column names are added.
+if (length(new_columns) < ncol(merged_data)) {
+  extra_columns <- paste0("Indicator_", (length(new_columns) + 1):ncol(merged_data))
+  new_columns <- c(new_columns, extra_columns)
+}
+#
+names(merged_data) <- new_columns
+# check
+colnames(merged_data) 
+
+#long format
+data_new <- merged_data %>%
+  pivot_longer(cols = -c(Country, Country_Code, Year), 
+               names_to = "Indicator", 
+               values_to = "Value")
+print(head(data_new))
+write_csv(data_new, "C://Users//董泽南//Desktop//data_new.csv") 
+```
+
+```{r}
+library(gt)
+library(dplyr)
+combined_data<-read.csv("combined_data.csv",header=TRUE)
+combined_data |>
+  summarise(mean = mean(Terrorist.attacks),
+            median = median(Terrorist.attacks),
+            sd = sd(Terrorist.attacks),
+            min = min(Terrorist.attacks),
+            max = max(Terrorist.attacks),
+            IQR = quantile(Terrorist.attacks,0.75) - quantile(Terrorist.attacks,0.25),
+            sample_size = n()) |>
+  gt() |>
+  fmt_number(decimals = 2) |>
+  cols_label(
+    mean = html("Mean"),
+    median = html("Median"),
+    sd = html("Sd"),
+    min = html("Min"),
+    max = html("Max"),
+    IQR = html("IQR"),
+    sample_size = html("Sample size")
+  )
+```
+
+```{r}
+#Terrorist Attacks Over Time
+library(tidyverse)
+library(ggplot2)
+ggplot(data_new %>% filter(Indicator == "Terrorist_Attacks"), 
+       aes(x = Year, y = Value)) +
+  geom_line(color = "lightblue", size = 1) +
+  geom_point(color = "tomato", size = 2) +
+  labs(title = "Terrorist Attacks Over Time",
+       x = "Year", y = "Number of Terrorist Attacks") +
+  theme_minimal()
+
+```
+
+```{r}
+#GDP growth trend
+ggplot(data_new %>% filter(Indicator == "GDP_Growth"), 
+       aes(x = Year, y = Value)) +
+  geom_line(color = "lightblue", size = 1) +
+  geom_point(color = "tomato", size = 2) +
+  labs(title = "GDP Growth Rate Over Time",
+       x = "Year", y = "GDP Growth (%)") +
+  theme_minimal()
+```
+
+```{r}
+#Relationship between GDP growth rate and unemployment rate
+ggplot(data_new%>% filter(Indicator %in% c("Unemployment_Rate", "GDP_Growth")) %>% 
+         spread(Indicator, Value), 
+       aes(x = GDP_Growth, y = Unemployment_Rate)) +
+  geom_point(color = "lightblue", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "tomato") +
+  labs(title = "Unemployment Rate vs GDP Growth",
+       x = "GDP Growth (%)", y = "Unemployment Rate (%)") +
+  theme_minimal()
+
+```
+
+```{r}
+#Change in government spending as a share of GDP
+ggplot(data_new %>% filter(Indicator == "Government_Expenditure_GDP"), 
+       aes(x = Year, y = Value)) +
+  geom_col(fill = "lightblue") +
+  labs(title = "Government Expenditure as % of GDP",
+       x = "Year", y = "Expenditure (% of GDP)") +
+  theme_minimal()
+
+
+```
+
+```{r}
+#Tax changes
+ggplot(data_new %>% filter(Indicator == "Tax_Revenue_Share_GDP"), 
+       aes(x = Year, y = Value)) +
+  geom_line(color = "lightblue", size = 1) +
+  geom_point(color = "tomato", size = 2) +
+  labs(title = "Tax Revenue as % of GDP Over Time",
+       x = "Year", y = "Tax Revenue (% of GDP)") +
+  theme_minimal()
+
+```
+
+```{r}
+#Nuclear weapons changes
+ggplot(data_new %>% filter(Indicator == "Nuclear_Warheads"), 
+       aes(x = Year, y = Value)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  labs(title = "Nuclear Warheads Over Time",
+       x = "Year", y = "Number of Nuclear Warheads") +
+  theme_minimal()
+
+```
+
+```{r}
+## 
+# install.packages("ggplot2")
+# install.packages("GGally")
+# install.packages("reshape2")
+# install.packages("corrplot")
+
+library(ggplot2)
+library(GGally)    # 
+library(reshape2)  # 
+library(corrplot)  # 
+
+
+# Convert long format to wide format
+data_wide <- pivot_wider(data_new, 
+                         id_cols = c("Country", "Year"), 
+                         names_from = Indicator, 
+                         values_from = Value)
+
+# Delete "Value." prefix from column names
+colnames(data_wide) <- gsub("^Value\\.", "", colnames(data_wide))
+
+# Ensure column names are properly formatted
+colnames(data_wide) <- gsub("_", " ", colnames(data_wide))  # Replace underscores with spaces
+
+# Choose variables (without using line breaks)
+selected_columns <- c("Terrorist Attacks", "Unemployment Rate", 
+                      "Military Expenditure", "Tax Revenue Share GDP", 
+                      "Nuclear Warheads")
+
+# Check available column names before selecting
+available_columns <- colnames(data_wide)
+print(available_columns)  # Debugging step to verify column names
+
+# Filter dataset by available columns (ignore missing ones)
+data_corr <- data_wide[, intersect(selected_columns, available_columns), drop = FALSE]
+
+# Adjust plot size
+options(repr.plot.width = 10, repr.plot.height = 10)
+
+colnames(data_corr) <- sapply(colnames(data_corr), function(x) {
+  paste(strwrap(x, width = 10), collapse = "\n")
+})
+
+# Draw a scatter plot matrix
+p <- ggpairs(data_corr, 
+        lower = list(continuous = wrap("points", color = "lightblue", alpha = 0.6)),
+        upper = list(continuous = wrap("cor", size = 4, color = "tomato")),
+        diag = list(continuous = wrap("densityDiag", fill = "lightblue"))
+)
+
+p + theme(
+    axis.text.x = element_text(size = 8, angle = 30, vjust = 1, hjust = 1),
+    axis.text.y = element_text(size = 8)
+)
+
+```
