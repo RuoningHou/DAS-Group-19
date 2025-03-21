@@ -117,15 +117,8 @@ ggplot(df, aes(x = outcome_type, y = time_at_shelter)) +
   theme_minimal() +
   ggtitle("Boxplot of Target Variable by Category")
 ```
-##This boxplot shows the time animals stay in the shelter under different outcome categories (Adoption, Died, Euthanized, Foster, Returned to Owner).
-  ADOPTION:Most animals in this group stay in the shelter for a long period. The upper range of the boxplot and outliers suggest that some animals stayed in the shelter for a long time before being adopted.
-  The median is relatively high, indicating that these animals generally take longer to find a new home.
-  DIED:The animals in this group have a shorter stay, with the median close to 0, indicating that these animals were either not adopted or passed away early.
-  There are no noticeable outliers, suggesting that the time spent by these animals in the shelter is relatively consistent.
-  EUTHANIZED:The animals in this group tend to stay in the shelter for a longer period, and there are several outliers, indicating that some animals stayed in the shelter for an extended time before being euthanized.
-  FOSTER:Animals in foster care stay in the shelter for a short period. The median is close to 0, and there are no noticeable outliers, indicating that most fostered animals stay briefly in the shelter.
-  RETURNED TO OWNER:Animals returned to their owners also have a short stay, similar to the foster group, indicating that these animals are typically returned to their owners after a short stay in the shelter.
-# Convert data to long format
+
+##This boxplot shows the time animals stay in the shelter under different outcome categories (Adoption, Died, Euthanized, Foster, Returned to Owner). ADOPTION:Most animals in this group stay in the shelter for a long period. The upper range of the boxplot and outliers suggest that some animals stayed in the shelter for a long time before being adopted. The median is relatively high, indicating that these animals generally take longer to find a new home. DIED:The animals in this group have a shorter stay, with the median close to 0, indicating that these animals were either not adopted or passed away early. There are no noticeable outliers, suggesting that the time spent by these animals in the shelter is relatively consistent. EUTHANIZED:The animals in this group tend to stay in the shelter for a longer period, and there are several outliers, indicating that some animals stayed in the shelter for an extended time before being euthanized. FOSTER:Animals in foster care stay in the shelter for a short period. The median is close to 0, and there are no noticeable outliers, indicating that most fostered animals stay briefly in the shelter. RETURNED TO OWNER:Animals returned to their owners also have a short stay, similar to the foster group, indicating that these animals are typically returned to their owners after a short stay in the shelter. \# Convert data to long format
 
 ```{r}
 df_long <- df %>%
@@ -141,13 +134,8 @@ ggplot(df_long, aes(x = Category_Type, fill = Category)) +
   xlab("Variable") + ylab("Proportion") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-##This chart shows the proportional distribution of four variables: animal type, chip status, intake type, and outcome type:
-Animal Type: Dogs have the highest proportion, followed by cats.
-Chip Status: Most animals do not have a chip.
-Intake Type: Stray animals make up a significant portion.
-Outcome Type: Adoption and euthanasia are the most common outcomes, with adoption being the highest.
-Overall, dogs and strays dominate, and adoption is the most frequent outcome.
-# log transformation
+
+##This chart shows the proportional distribution of four variables: animal type, chip status, intake type, and outcome type: Animal Type: Dogs have the highest proportion, followed by cats. Chip Status: Most animals do not have a chip. Intake Type: Stray animals make up a significant portion. Outcome Type: Adoption and euthanasia are the most common outcomes, with adoption being the highest. Overall, dogs and strays dominate, and adoption is the most frequent outcome. \# log transformation
 
 ```{r}
 df$log_time_at_shelter <- log(df$time_at_shelter + 1)
@@ -159,13 +147,9 @@ ggplot(df, aes(x = outcome_type, y = log_time_at_shelter)) +
   theme_minimal() +
   ggtitle("Boxplot of Target Variable by Category")
 ```
-##This boxplot shows the log-transformed shelter stay time for animals under different outcome categories (Adoption, Died, Euthanized, Foster, Returned to Owner).
-Adoption: Animals have a relatively longer stay, with some large outliers.
-Died: Animals have a shorter stay, with the median close to 0.
-Euthanized: Animals tend to stay longer, with a wider distribution.
-Foster: Animals have a shorter stay, with a concentrated distribution.
-Returned to Owner: Animals also have a shorter stay, similar to Foster.
-Overall, animals in Adoption and Euthanized categories tend to stay longer, while animals in Died, Foster, and Returned to Owner categories have shorter stays.
+
+##This boxplot shows the log-transformed shelter stay time for animals under different outcome categories (Adoption, Died, Euthanized, Foster, Returned to Owner). Adoption: Animals have a relatively longer stay, with some large outliers. Died: Animals have a shorter stay, with the median close to 0. Euthanized: Animals tend to stay longer, with a wider distribution. Foster: Animals have a shorter stay, with a concentrated distribution. Returned to Owner: Animals also have a shorter stay, similar to Foster. Overall, animals in Adoption and Euthanized categories tend to stay longer, while animals in Died, Foster, and Returned to Owner categories have shorter stays.
+
 ```{r}
 write.csv(df, "Group19_log_transformed.csv", row.names = FALSE)
 print("Log-transformed dataset has been saved as 'Group19_log_transformed.csv'")
@@ -190,6 +174,32 @@ ggplot(data = evals.data, aes(x = animal_type, y = time_at_shelter, fill = anima
   theme(legend.position = "none")
 ```
 
+This box plot shows the shelter stay duration (**time_at_shelter**) for different animal types (**CAT, DOG, OTHER**).
+
+### **2.1. Overall Trends:**
+
+-   **Median stay durations** are similar across all categories, but **DOG has a wider distribution**.
+
+-   **CAT and DOG show greater variability**, while **OTHER has a smaller range**.
+
+-   **Outliers** (black dots) are more frequent in **DOG and CAT**, indicating some animals stay significantly longer.
+
+### **2.2. Key Observations:**
+
+-   **Dogs tend to stay longer than cats**, as seen in their **higher IQR and max values**.
+
+-   **Other animals leave shelters faster**, possibly due to smaller sample sizes or different handling processes.
+
+-   **All distributions are right-skewed**, meaning most animals have short stays, with a few staying much longer.
+
+### **2.3. Possible Causes:**
+
+-   **Dogs require longer adoption matching than cats**.
+
+-   **Other animals (e.g., small mammals, reptiles) might have faster processing**.
+
+-   **Factors like microchip status, health, and age could further influence shelter stay durations**.
+
 #3. GLM analysis
 
 #3.1 GLM analysis of type
@@ -202,6 +212,32 @@ summary(model_glm.animal_type)
 plot(model_glm.animal_type)
 ```
 
+#### **1. Model Interpretation**
+
+This Poisson regression model examines the effect of **animal type (CAT, DOG, OTHER)** on **shelter stay duration (time_at_shelter)**. Key findings:
+
+-   **Intercept = 1.6918**, representing the Poisson coefficient for the reference category (**CAT**).
+
+-   **DOG coefficient = 0.1533, p \< 0.001**, indicating that dogs stay significantly longer than cats.
+
+-   **OTHER coefficient = 0.0069, p = 0.951**, showing no significant difference from cats.
+
+-   **AIC = 18257**, suggesting the model may not fully explain shelter stay duration.
+
+#### **2. Residual Diagnostics**
+
+-   **Residuals vs. Fitted Plot**: Large outliers indicate possible overdispersion.
+
+-   **Q-Q Plot**: Deviations at the upper end suggest a poor Poisson fit.
+
+-   **Scale-Location Plot**: Variance is stable, but extreme values exist.
+
+-   **Residuals vs. Leverage Plot**: Some points have high influence (Cook’s distance).
+
+#### **3. Conclusion & Improvements**
+
+-   Dogs stay significantly longer than cats; OTHER animals show no difference.
+
 #3.1.2 Intake type
 
 ```{r}
@@ -209,6 +245,32 @@ model_glm.intake_type <- glm(time_at_shelter ~ intake_type, data = data, family 
 summary(model_glm.intake_type)
 plot(model_glm.intake_type)
 ```
+
+#### **1. Model Interpretation**
+
+This Poisson regression examines the effect of **intake type** on **shelter stay duration**:
+
+-   **Intercept = 2.5294**, representing the reference category .
+
+-   **OWNER SURRENDER: Coefficient = -0.8802, p \< 0.001**, indicating significantly shorter stays.
+
+-   **STRAY: Coefficient = -0.7293, p \< 0.001**, also showing shorter stays.
+
+-   **AIC = 17705**, better fit than the previous model (AIC = 18257).
+
+#### **2. Residual Diagnostics**
+
+-   **Residuals vs. Fitted Plot**: High outliers suggest **overdispersion**.
+
+-   **Q-Q Plot**: Deviations indicate Poisson distribution mismatch.
+
+-   **Scale-Location Plot**: Stable variance but extreme values.
+
+-   **Residuals vs. Leverage**: Some high-influence points.
+
+#### **3. Conclusion & Suggestions**
+
+-   **Owner-surrendered and stray animals have significantly shorter stays**.
 
 #3.1.3 Outcome type
 
@@ -218,6 +280,34 @@ summary(model_glm.outcome_type)
 plot(model_glm.outcome_type)
 ```
 
+#### **1. Model Interpretation**
+
+This Poisson regression examines the effect of **outcome type** on **shelter stay duration**:
+
+-   **Intercept = 2.1594**, representing the **adopted category**.
+
+-   **EUTHANIZED: Coefficient = -0.5849, p \< 0.001**, indicating shorter stays.
+
+-   **OTHER: Coefficient = -0.6093, p \< 0.001**, also showing shorter stays.
+
+-   **RETURNED TO OWNER: Coefficient = -1.0617, p \< 0.001**, with the **shortest stay duration**.
+
+-   **AIC = 16667**, suggesting better model fit than previous (AIC = 17705).
+
+#### **2. Residual Diagnostics**
+
+-   **High outliers indicate overdispersion**.
+
+-   **Q-Q plot shows deviation**, suggesting Poisson may not fully fit.
+
+-   **Stable variance but extreme values** in the scale-location plot.
+
+-   **Influential points detected in residuals vs. leverage plot**.
+
+#### **3. Conclusion**
+
+Animals **returned to owners have the shortest stay**, while **euthanized and other outcomes also have shorter durations**.
+
 #3.1.4 Chip status
 
 ```{r}
@@ -225,6 +315,32 @@ model_glm.chip_status <- glm(time_at_shelter ~ chip_status, data = data, family 
 summary(model_glm.chip_status)
 plot(model_glm.chip_status)
 ```
+
+#### **1. Model Interpretation**
+
+This Poisson regression examines **chip status** and its effect on **shelter stay duration**:
+
+-   **Intercept = 1.6933**, representing the **“not scanned”** category.
+
+-   **SCAN CHIP: Coefficient = 0.1161, p = 0.0286**, indicating **slightly longer stays for animals with chips**.
+
+-   **SCAN NO CHIP: Coefficient = 0.1275, p = 0.0094**, showing **a similar effect for animals without chips**.
+
+-   **AIC = 18293**, suggesting **moderate model fit**.
+
+#### **2. Residual Diagnostics**
+
+-   **High outliers suggest overdispersion**.
+
+-   **Q-Q plot shows deviation**, indicating a **poor Poisson fit**.
+
+-   **Stable variance but extreme values** in the scale-location plot.
+
+-   **Influential points detected** in the leverage plot.
+
+#### **3. Conclusion**
+
+Animals **with or without chips have slightly longer stays**, likely due to **chip registration and adoption processes**.
 
 #3.2 Full Glm analysis
 
@@ -255,6 +371,32 @@ $$
 \end{aligned}
 $$
 
+#### **1. Model Interpretation**
+
+This Poisson model analyzes **shelter stay duration** based on **animal type, intake type, outcome type, and chip status**:
+
+-   **DOG (0.1606, p \< 0.001)** → Longer stay than reference.
+
+-   **OWNER SURRENDER (-1.4761, p \< 0.001)** & **STRAY (-1.0941, p \< 0.001)** → Shorter stays.
+
+-   **EUTHANIZED (-0.5663, p \< 0.001)** & **RETURNED TO OWNER (-1.0742, p \< 0.001)** → Shortest stays.
+
+-   **SCAN CHIP (0.1868, p \< 0.001)** → Slightly longer stay.
+
+-   **AIC = 15205**, improved fit over single-variable models.
+
+#### **2. Residual Analysis**
+
+-   **Scattered residuals, some outliers present**.
+
+-   **Q-Q plot shows deviation from normality**.
+
+-   **Stable variance, high Cook’s distance for some points**.
+
+#### **3. Conclusion**
+
+Dogs stay longer; **surrendered & returned animals have the shortest stays**. **Chipped animals stay slightly longer**, likely due to adoption processing.
+
 #Final Resolution
 
 ```{r}
@@ -276,6 +418,28 @@ model.quasi <- glm(time_at_shelter ~ animal_type + intake_type + outcome_type + 
 summary(model.quasi)
 ```
 
+#### **1. Overdispersion Adjustment**
+
+-   **Quasi-Poisson regression** (family = quasipoisson) was used to correct overdispersion.
+
+-   **Dispersion parameter = 6.8928**, confirming excess variance.
+
+#### **2. Key Findings**
+
+-   **DOG (0.1606, p = 0.0149)** → Longer shelter stay.
+
+-   **OWNER SURRENDER (-1.4761, p \< 0.001)** & **STRAY (-1.0941, p \< 0.001)** → Shorter stays.
+
+-   **SCAN CHIP (0.1868, p = 0.1925)** → Not significant.
+
+#### **3. Conclusion**
+
+-   **Quasi-Poisson corrected overdispersion**, but **high outliers remain**.
+
+-   **Negative Binomial Regression** may provide a better fit.
+
+-   Consider **interaction terms or additional variables** to improve the model.
+
 #predicted
 
 ```{r}
@@ -291,11 +455,45 @@ plot(data$time_at_shelter, data$predicted.time,
 abline(0, 1, col = "red", lwd = 2)
 ```
 
+#### **1. Overview**
+
+Poisson regression (`model.full`) was used to predict **shelter stay duration** (`predicted.time`).
+
+#### **2. Key Observations**
+
+-   **Predictions underestimate actual stay times**, especially for long durations (e.g., **21 days predicted as 8.16**).
+
+-   **Short stays (0-2 days) are predicted more accurately**.
+
+#### **3. Conclusion & Recommendations**
+
+-   **Overdispersion or missing variables** may cause errors.
+
+-   **Consider Negative Binomial Regression** to better handle long-tail data.
+
 #VIF
 
 ```{r}
 vif(model.full)
 ```
+
+#### **1. Overview**
+
+-   **VIF detects multicollinearity** (VIF \> 5 or 10 is concerning).
+
+-   **GVIF** is used for categorical variables, with **GVIF\^(1/(2\*Df))** for comparison.
+
+#### **2. Key Findings**
+
+-   **All GVIF values are near 1** (highest: **1.0559** for `intake_type`).
+
+-   **No significant multicollinearity** among variables.
+
+#### **3. Conclusion**
+
+-   **Model stability is not affected by collinearity**.
+
+-   **Consider checking interactions** for potential risks.
 
 #3.3 AIC analysis
 
@@ -307,4 +505,24 @@ AIC(model_glm.animal_type, model_glm.intake_type, model_glm.outcome_type, model_
 
 ```{r}
 BIC(model_glm.animal_type, model_glm.intake_type, model_glm.outcome_type, model_glm.chip_status, model.full)
+```
+
+-   **AIC Analysis:**
+
+    -   **model.full (AIC = 15205.41) is the best model**, significantly lower than single-variable models, indicating improved fit with multiple variables.
+
+<!-- -->
+
+-   **BIC Analysis:**
+
+```         
+-   **model.full (BIC = 15260.66) remains optimal**, though slightly higher due to BIC's stronger penalty on model complexity.
+```
+
+<!-- -->
+
+-   **Final Conclusion:**
+
+```         
+-   **model.full is the best choice**, as it has the lowest AIC and BIC, ensuring a high model fit without excessive complexity.
 ```
